@@ -45,6 +45,13 @@ class MyAppState extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  void removeFavorite(WordPair index) {
+    if (favorites.contains(index)) {
+      favorites.remove(index);
+    }
+    notifyListeners();
+  }
 }
 
 class MyHomePage extends StatefulWidget {
@@ -62,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
       case 0:
         page = GeneratorPage();
       case 1:
-        page = Placeholder();
+        page = FavoritePage();
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
@@ -146,6 +153,63 @@ class GeneratorPage extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class FavoritePage extends StatelessWidget {
+  const FavoritePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final style = theme.textTheme.displayMedium!
+        .copyWith(color: theme.colorScheme.onPrimary);
+
+    var appState = context.watch<MyAppState>();
+    var favorites = appState.favorites;
+
+    if (favorites.isEmpty) {
+      return Center(child: Text('No favorites yet.'));
+    }
+
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      Text('You have ${favorites.length} favorites:'),
+      Expanded(
+        child: ListView.builder(
+          itemCount: favorites.length,
+          itemBuilder: (_, index) {
+            return Card(
+              color: theme.colorScheme.primary,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      favorites[index].asPascalCase,
+                      style: style,
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        appState.removeFavorite(favorites[index]);
+                      },
+                      icon: Icon(Icons.remove_circle_outline_sharp),
+                      color: Colors.white,
+                    )
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+      for (var item in favorites)
+        ListTile(
+          leading: Icon(Icons.favorite),
+          title: Text(item.asPascalCase),
+        )
+    ]);
   }
 }
 
